@@ -13,7 +13,6 @@ import (
 	"github.com/dhowden/tag"
 	"github.com/dwbuiten/go-mediainfo/mediainfo"
 	"github.com/h2non/filetype"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -51,6 +50,7 @@ type aalbum map[string]atrack
 type aartist map[string]aalbum
 
 var (
+	userLogLevel    string
 	sourceDirectory string
 	audioinfo       m4ainfo
 	artistlist      aartist
@@ -70,9 +70,11 @@ var (
 
 func init() {
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.WarnLevel)
+	log.SetLevel(log.DebugLevel)
+	flag.StringVar(&userLogLevel, "loglevel", "warn", "Loglevel: [error | warn | info | debug | trace]")
 	flag.StringVar(&sourceDirectory, "directory", "", "Directory to parse")
 	flag.Parse()
+	setLogLevel()
 	if len(sourceDirectory) == 0 {
 		log.Errorln("no directory to work on")
 		os.Exit(1)
@@ -82,10 +84,27 @@ func init() {
 		log.Errorf("%v is not directory to work on", sourceDirectory)
 		os.Exit(2)
 	}
+
 	mediainfo.Init()
 
 }
+func setLogLevel() {
+	switch userLogLevel {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "trace":
+		log.SetLevel(log.TraceLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	default:
+		log.SetLevel(log.WarnLevel)
+	}
 
+}
 func checkMaxDiskSetAndAllEqual(author string, book string) bool {
 	log.Infof("[Max Disk]: Checking Track Integrity of \"%v: %v\"\n", author, book)
 	res := true
@@ -375,6 +394,8 @@ func orderedTracksOnBook(ds *diskset) {
 	ds.sorted = list
 
 }
+
+/*
 func diskSetInfo(ds *diskset, jsonID string) []string {
 
 	for j := 0; j < ds.numberofdisks; j++ {
@@ -387,7 +408,7 @@ func diskSetInfo(ds *diskset, jsonID string) []string {
 
 	return nil
 }
-
+*/
 func linkSourceFiles(book *diskset) {
 
 	tmpdi := TMPDIR
@@ -426,7 +447,7 @@ func processSet() {
 		log.Infof("Processing Author %v\n", auth)
 		for book := range artistlist[auth] {
 			ds := prepareProcessingSet(auth, book)
-			diskSetInfo(ds, "notusedhere")
+			//diskSetInfo(ds, "notusedhere")
 			if ds == nil {
 				log.Warnf("%v : %v is empty\n", auth, book)
 				continue
@@ -647,7 +668,7 @@ func areThereAnyPartsToJoin(auth string, book string) bool {
 	r := true
 	b := artistlist[auth][book]
 	if len(b) < 2 {
-		log.Infof("[nothing to do:] %v %v has just one file - nothing to join\n", auth, book)
+		log.Warnf("[nothing to do:] %v %v has just one file - nothing to join\n", auth, book)
 		r = false
 	}
 	return r
@@ -664,7 +685,7 @@ func allreadyLongEnough(auth string, book string) bool {
 	x := getSomeKey(b)
 
 	if int(b[x].playlength) > ALLREADYLONGENOUGH {
-		log.Infof("[nothing to do]: %s %s has already long parts\n", auth, book)
+		log.Warnf("[nothing to do]: %s %s has already long parts\n", auth, book)
 		r = false
 	}
 	return r
@@ -776,14 +797,12 @@ func checkIntegrity() {
 				continue
 			}
 
-			
-				t = checkMaxTrackAndAllPresent(auth, book)
-				if t != true {
-					delete(artistlist[auth], book)
-					//break
-					continue
-				}
-			*/
+			t = checkMaxTrackAndAllPresent(auth, book)
+			if t != true {
+				delete(artistlist[auth], book)
+				//break
+				continue
+			}
 		}
 	}
 
