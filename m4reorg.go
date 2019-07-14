@@ -86,34 +86,6 @@ func init() {
 
 }
 
-/*
-func checkAllDisksInSetPresent(author string, book string, maxdisk int) bool {
-        r := true
-        diskprsnt := make([]bool, maxdisk+1)
-
-        //slice2 := make([]int, 2)
-
-        b := artistlist[author][book]
-        for track := range b {
-                // d := b[track].diskno
-                //      log.Warnf("Disk %d", d)
-                if b[track].diskno != 0 {
-
-                        diskprsnt[b[track].diskno] = true
-                }
-        }
-        for j := 1; j <= maxdisk; j++ {
-                if diskprsnt[j] == true {
-                        log.Debugf("%s %s disk  %d is present\n", author, book, j)
-                } else {
-                        log.Errorf("%s %s disk no %d is missing\n", author, book, j)
-                        r = false
-                }
-
-        }
-        return r
-}
-*/
 func checkMaxDiskSetAndAllEqual(author string, book string) bool {
 	log.Infof("[Max Disk]: Checking Track Integrity of \"%v: %v\"\n", author, book)
 	res := true
@@ -305,30 +277,30 @@ func generateHeader(book *diskset, fs []*os.File) {
 		}
 	}
 
-	/*
-		;FFMETADATA1
-		major_brand=M4A
-		minor_version=0
-		compatible_brands=M4A mp42isom
-		comment=Paula (Gelesen Von Franziska Pigulla)
-		title=6a - Die Schuldlosen
-		artist=Hammesfahr, Petra
-		album=Die Schuldlosen
-		date=2012
-		media_type=2
-		genre=Hörbuch
-		Encoding Params=vers
-		encoder=Lavf57.71.100
-		[CHAPTER]
-		TIMEBASE=1/1000
-		START=0
-		END=445000
-		title=Kapitel 1
-		[CHAPTER]
-		TIMEBASE=1/1000
-		START=445000
-		END=684000
-		title=Kapitel 2
+	/* The header should look like this.
+	;FFMETADATA1
+	major_brand=M4A
+	minor_version=0
+	compatible_brands=M4A mp42isom
+	comment=Paula (A comment)
+	title=6a - A title
+	artist=Doe, John
+	album=The book title
+	date=2012
+	media_type=2
+	genre=Hörbuch
+	Encoding Params=vers
+	encoder=Lavf57.71.100
+	[CHAPTER]
+	TIMEBASE=1/1000
+	START=0
+	END=445000
+	title=Kapitel 1
+	[CHAPTER]
+	TIMEBASE=1/1000
+	START=445000
+	END=684000
+	title=Kapitel 2
 
 	*/
 }
@@ -804,7 +776,7 @@ func checkIntegrity() {
 				continue
 			}
 
-			/*
+			
 				t = checkMaxTrackAndAllPresent(auth, book)
 				if t != true {
 					delete(artistlist[auth], book)
